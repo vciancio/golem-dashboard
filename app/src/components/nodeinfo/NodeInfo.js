@@ -69,6 +69,11 @@ class NodeInfo extends React.Component {
     if (!this.state.isLoaded) {
       return this._renderLoading()
     }
+    if (this.golemNode === null 
+        || this.golemNode.info === null
+        || this.golemNode.hardware === null){
+      return this._renderLoadFailed()
+    }
     return this._renderNode(this.golemNode)
   }
 

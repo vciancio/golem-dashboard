@@ -1,6 +1,10 @@
 export default class GolemNode {
     constructor(data) {
-        this.info = data['golem'];
+        if(data['golem']){
+            this.info = data['golem'];
+        } else {
+            this.info = data['info'];
+        }
         this.hardware = data['hardware'];
     }
 }
