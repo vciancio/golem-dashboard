@@ -16,7 +16,7 @@ services:
     build: .
     restart: always
     environment:
-    - REACT_APP_ADDRESSES=192.168.1.2:5000,192.168.1.2:5001
+      - REACT_APP_ADDRESSES=192.168.1.2:5000,192.168.1.2:5001
     volumes:
       - /etc/localtime:/etc/localtime:ro
     ports: 
