@@ -1,0 +1,12 @@
+.card {
+    border-radius: 25px;
+    background: #12188c;
+    padding: 20px; 
+    width: 200px;
+    height: 150px;  
+  }
+
+.card h2 {
+  color: white;
+}
+  
