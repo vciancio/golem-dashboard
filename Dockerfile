@@ -1,12 +1,12 @@
 FROM node:lts-alpine
 
-# install simple http server for serving static content
-RUN npm install -g http-server
-
 WORKDIR /app
 
-COPY app/* .
+ENV PATH /app/node_modules/.bin:$PATH
+
+COPY app/package.json ./
+COPY app/package-lock.json ./
 RUN npm install
 
-EXPOSE 3000
-CMD ["npm", "run", "dev"]
+COPY app/ /app/
+CMD ["npm", "start"]
