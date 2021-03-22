@@ -133,11 +133,13 @@ class NodeInfo extends React.Component {
   }
 
   _renderTasks(node) {
+    let isProcessing = node.hardware.isProcessingTask
     return this._renderCardListGroup({
       title: "Tasks Processed",
       items: [
         ["All Time", node.info.processedTotal],
-        ["Last Hour", node.info.processedLastHour]
+        ["Last Hour", node.info.processedLastHour],
+        ["Is Running Task", isProcessing == null ? 'unknown' : isProcessing.toString()]
       ]
     })
   }
