@@ -1,6 +1,6 @@
 # Golem Dashboard
 
-Just a very barebones reactjs dashboard which will display the stats of your golem nodes... Cause ssh-ing into each of them is too hard.
+Just a very barebones reactjs dashboard which will display the stats of your golem nodes... Cause ssh-ing into each of them is too hard. Works with [vciancio/golem-node-server](https://github.com/vciancio/golem-node-server).
 
 ## Screenshots
 |Desktop|Mobile|
