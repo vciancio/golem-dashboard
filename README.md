@@ -19,7 +19,8 @@ Just a very barebones reactjs dashboard which will display the stats of your gol
 | 3000 | Node Port |
 
 ## Running Without Docker
-> Note, if you don't have your environment variables set on your system, you can set them for a single command as shown below.
+> Note: if you don't have your environment variables set on your system, you can set them for a single command as shown below.
+> Requires NPM version 6 to run. Make sure to update your NPM version to latest before running this app.
 ~~~
 cd app
 npm install
