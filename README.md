@@ -11,6 +11,7 @@ Just a very barebones reactjs dashboard which will display the stats of your gol
 | Variables | Description | Example |
 | ------------- | ----------- | ------- |
 | REACT_APP_ADDRESSES | List of `host:port` addresses where your golem instances are located. | 192.168.1.2:5000 |
+| REACT_APP_POLL_RATE | Polling Rate to refresh dashboard data in Milliseconds | 5000 |
 
 ## Ports
 | Port | Description
@@ -34,6 +35,7 @@ services:
     restart: always
     environment:
       - REACT_APP_ADDRESSES=192.168.1.2:5000,192.168.1.2:5001
+      - REACT_APP_REFRESH_RATE=5
     volumes:
       - /etc/localtime:/etc/localtime:ro
     ports: 

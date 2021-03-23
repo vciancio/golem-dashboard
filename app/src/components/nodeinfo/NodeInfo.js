@@ -2,12 +2,14 @@ import React from 'react';
 import GolemNodeApi from '../../utils/GolemNodeApi';
 import GaugeChart from 'react-gauge-chart';
 import ZSyncApi from '../../utils/ZSyncApi';
+import EnvConfig from '../../utils/EnvConfig';
 import CommonRender from '../../utils/CommonRender'
 
 // import { getDefaultProvider, Wallet } from 'zksync'
 // import { ethers } from 'ethers'
 
-const POLL_INTERVAL = 5000
+const POLL_INTERVAL = EnvConfig.pollingRate
+const POLL_INTERVAL_DEFAULT = 5000
 const LINK_ZKSCAN_ACCOUNT = "https://zkscan.io/explorer/accounts"
 
 class NodeInfo extends React.Component {
@@ -83,7 +85,8 @@ class NodeInfo extends React.Component {
         token: token
       });
       // Start our timer 
-      this.timer = setTimeout(() => this._pollFetch(), POLL_INTERVAL);
+      const interval = POLL_INTERVAL ? POLL_INTERVAL : POLL_INTERVAL_DEFAULT;
+      this.timer = setTimeout(() => this._pollFetch(), interval);
     } catch (e) {
       console.log('Failed to load data for ' + address, e)
       this.setState({ isLoaded: false, fetchFailed: true });
