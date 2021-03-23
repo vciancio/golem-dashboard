@@ -22,7 +22,8 @@ Just a very barebones reactjs dashboard which will display the stats of your gol
 > Note, if you don't have your environment variables set on your system, you can set them for a single command as shown below.
 ~~~
 cd app
-REACT_APP_ADDRESSES=192.168.1.2:5000 npm run
+npm install
+REACT_APP_ADDRESSES=192.168.1.2:5000 npm start
 ~~~
 
 ## Running w/ Docker Compose
