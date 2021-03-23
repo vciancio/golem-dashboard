@@ -1,11 +1,18 @@
 import React from 'react';
 import GolemNodeApi from '../../utils/GolemNodeApi';
-import GaugeChart from 'react-gauge-chart'
+import GaugeChart from 'react-gauge-chart';
+import ZSyncApi from '../../utils/ZSyncApi';
+import CommonRender from '../../utils/CommonRender'
+
+// import { getDefaultProvider, Wallet } from 'zksync'
+// import { ethers } from 'ethers'
 
 const POLL_INTERVAL = 5000
+const LINK_ZKSCAN_ACCOUNT = "https://zkscan.io/explorer/accounts"
 
 class NodeInfo extends React.Component {
   golemNode = null
+  timer = null
 
   constructor(props) {
     super(props);
@@ -21,13 +28,18 @@ class NodeInfo extends React.Component {
     let address = this.props.address;
     console.log('Initial Fetch: ' + address);
     this._fetchNodeInfo(address);
-    this.timer = setInterval(() => this._pollFetch(), POLL_INTERVAL);
   }
 
   componentWillUnmount() {
-    clearInterval(this.timer);
+    clearTimeout(this.timer);
     this.timer = null;
-    this.setState({ isLoaded: false, fetchFailed: false })
+    this.setState({
+      isLoaded: false,
+      fetchFailed: false,
+      ethAddr: null,
+      glmBalance: null,
+      token: null
+    })
   }
 
   _retryFetch() {
@@ -43,23 +55,39 @@ class NodeInfo extends React.Component {
       return
     }
     let address = this.props.address;
-    console.log('Poll Fetch: ' + address);
     this._fetchNodeInfo(address)
   }
 
-  _fetchNodeInfo(address) {
+  async _fetchNodeInfo(address) {
     if (!address) {
       return
     }
-    GolemNodeApi.getNodeInfo(address)
-      .then(node => {
-        this.golemNode = node
-        this.setState({ isLoaded: true, fetchFailed: false });
-      })
-      .catch(error => {
-        console.log('Failed to load data for ' + address)
-        this.setState({ isLoaded: false, fetchFailed: true });
+
+    clearTimeout(this.timer)
+    this.timer = null
+
+    try {
+      const node = await GolemNodeApi.getNodeInfo(address)
+      this.golemNode = node
+      const token = node.info.network === 'mainnet' ? 'GLM' : 'tGLM'
+      const glmBalance = await ZSyncApi.getBalance(
+        node.info.network,
+        node.info.wallet,
+        token
+      )
+      this.setState({
+        isLoaded: true,
+        fetchFailed: false,
+        ethAddr: node.info.wallet,
+        glmBalance: glmBalance,
+        token: token
       });
+      // Start our timer 
+      this.timer = setTimeout(() => this._pollFetch(), POLL_INTERVAL);
+    } catch (e) {
+      console.log('Failed to load data for ' + address, e)
+      this.setState({ isLoaded: false, fetchFailed: true });
+    };
   }
 
   render() {
@@ -69,9 +97,9 @@ class NodeInfo extends React.Component {
     if (!this.state.isLoaded) {
       return this._renderLoading()
     }
-    if (this.golemNode === null 
-        || this.golemNode.info === null
-        || this.golemNode.hardware === null){
+    if (this.golemNode === null
+      || this.golemNode.info === null
+      || this.golemNode.hardware === null) {
       return this._renderLoadFailed()
     }
     return this._renderNode(this.golemNode)
@@ -107,6 +135,10 @@ class NodeInfo extends React.Component {
         <h2>{name}</h2>
         <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
           {this._renderNetwork(node)}
+          {this._renderWallet(
+            this.state.ethAddr,
+            this.state.token,
+            this.state.glmBalance)}
           {this._renderTasks(node)}
           {this._renderCpu(node)}
           {this._renderMemory(node)}
@@ -116,98 +148,87 @@ class NodeInfo extends React.Component {
   }
 
   _renderNetwork(node) {
-    let wallet = [
-      node.info.wallet.substring(0, 5),
-      node.info.wallet.substring(node.info.wallet.length - 3, node.info.wallet.length)
-    ].join('...')
-
-    return this._renderCardListGroup({
-      title: "Node Info",
-      items: [
-        ["Version", node.info.version],
-        ["Network", node.info.network],
-        ["Subnet", node.info.subnet],
-        ["Wallet", wallet],
-      ]
-    }, "col-md-4")
+    const listRend = CommonRender.list([
+      ["Version", node.info.version],
+      ["Network", node.info.network],
+      ["Subnet", node.info.subnet],
+    ])
+    return CommonRender.card(
+      "Node Info", listRend, "col-md-4")
   }
 
   _renderTasks(node) {
-    let isProcessing = node.hardware.isProcessingTask
-    return this._renderCardListGroup({
-      title: "Tasks Processed",
-      items: [
-        ["All Time", node.info.processedTotal],
-        ["Last Hour", node.info.processedLastHour],
-        ["Is Running Task", isProcessing == null ? 'unknown' : isProcessing.toString()]
-      ]
-    })
+    const isProcessing = node.hardware.isProcessingTask
+    const listRend = CommonRender.list([
+      ["All Time", node.info.processedTotal],
+      ["Last Hour", node.info.processedLastHour],
+      ["Is Running Task", isProcessing == null ? 'unknown' : isProcessing.toString()]
+    ])
+    return CommonRender.card("Tasks Processed", listRend)
   }
 
   _renderCpu(node) {
     let cpuPercent = node.hardware.cpu.percentUsage
-    return (
-      <div className="col">
-        <div className="card">
-          <div className="card-body">
-            <h5 className="card-title">CPU Usage</h5>
-            <GaugeChart id="gauge-chart3"
-              nrOfLevels={31}
-              colors={["#09af00", "#F44336"]}
-              arcWidth={0.3}
-              percent={cpuPercent / 100}
-              textColor="#000000"
-              animateDuration={3000}
-            />
-          </div>
-        </div>
-      </div>
-    )
+    return CommonRender.card("CPU Usage", (
+      <GaugeChart id="gauge-cpu"
+        nrOfLevels={31}
+        colors={["#09af00", "#F44336"]}
+        arcWidth={0.3}
+        percent={cpuPercent / 100}
+        textColor="#000000"
+        animateDuration={3000}
+      />
+    ));
   }
 
-  _renderMemory(node) { 
+  _renderMemory(node) {
     let memoryPercent = node.hardware.memory.percent
-    return (
-      <div className="col">
-        <div className="card">
-          <div className="card-body">
-            <h5 className="card-title">Memory Usage</h5>
-            <GaugeChart id="gauge-chart3"
-              nrOfLevels={31}
-              colors={["#09af00", "#F44336"]}
-              arcWidth={0.3}
-              percent={memoryPercent / 100}
-              textColor="#000000"
-              animateDuration={3000}
-            />
-          </div>
-        </div>
-      </div>
-    )
-
+    return CommonRender.card("Memory Usage", (
+      <GaugeChart id="gauge-memory"
+        nrOfLevels={31}
+        colors={["#09af00", "#F44336"]}
+        arcWidth={0.3}
+        percent={memoryPercent / 100}
+        textColor="#000000"
+        animateDuration={3000}
+      />
+    ));
   }
 
-  _renderCardListGroup(listGroup, size="") {
-    let title = listGroup.title
-    let items = listGroup.items
-    let className = ["col", size].join(" ");
-    return (
-      <div className={className}>
-        <div className="card">
-          <div className="card-body">
-            <h5 className="card-title">{title}</h5>
-            <ul className="list-group">
-              {items.map((item, index) => (
-                <li className="list-group-item d-flex justify-content-between align-items-center">
-                  {item[0]}
-                  <span className="badge">{item[1]}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    );
+  _renderWallet(ethAddr, token, balance = -1) {
+    if (!ethAddr) {
+      return
+    }
+
+    // ETH Addresses are really long, need to shorten to only 4 decimal places.
+    const wallet = [
+      ethAddr.substring(0, 5),
+      ethAddr.substring(ethAddr.length - 3, ethAddr.length)
+    ].join('...')
+
+    // Balances are really long, need to shorten to only 4 decimal places.
+    let friendlyBalance = balance == null ?
+      "unknown" :
+      Math.floor(balance * 1000000) / 1000000
+
+    if (typeof friendlyBalance !== 'string') {
+      friendlyBalance = friendlyBalance.toString() + '...'
+    }
+
+    const rendList = CommonRender.list([
+      ["Address", wallet],
+      [`${token} in ZkSync`, friendlyBalance],
+    ])
+
+    const link = `${LINK_ZKSCAN_ACCOUNT}/${ethAddr}`
+    const rendButton = (
+      <a class="btn btn-primary" href={link}>View in ZkScan</a>
+    )
+
+    return CommonRender.card("Payment Info", [
+      rendList,
+      rendButton
+    ])
   }
 }
 

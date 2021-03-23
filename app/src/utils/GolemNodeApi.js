@@ -17,7 +17,6 @@ async function getNodeInfo(address) {
     });
     if(req.ok){
         let json = await req.json();
-        console.log(json);
         return new GolemNode(json);
     }
     return null;

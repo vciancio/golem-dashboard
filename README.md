@@ -5,7 +5,7 @@ Just a very barebones reactjs dashboard which will display the stats of your gol
 ## Screenshots
 |Desktop|Mobile|
 |---|---|
-|![image](screenshots/Golem-Dashboard.jpg?raw=true)|![image](screenshots/Golem-Dashboard-Mobile.jpg?raw=true)|
+|![image](screenshots/Golem-Dashboard-Desktop.png?raw=true)|![image](screenshots/Golem-Dashboard-Mobile.png?raw=true)|
 
 ## Environment Variables
 | Variables | Description | Example |
