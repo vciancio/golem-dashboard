@@ -180,13 +180,13 @@ class NodeInfo extends React.Component {
 
   _renderHardware(node) {
     const memoryPercent = node.hardware.memory.percent
-    const cpuUsage = node.hardware.cpu.percentUsage
+    const cpuUsage = Math.round(node.hardware.cpu.percentUsage)
     const cpuRend = cpuUsage.toString() + "%"
 
     let cpuClass;
-    if (cpuUsage > 75) {
+    if (cpuUsage >= 80) {
       cpuClass = "percent-high"
-    } else if (cpuUsage > 25) {
+    } else if (cpuUsage >= 50) {
       cpuClass = "percent-mid"
     } else {
       cpuClass = ""
