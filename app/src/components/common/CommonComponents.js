@@ -1,3 +1,4 @@
+import './CommonComponents.css'
 import React from 'react';
 
 function card(title, body = null, size = "") {
@@ -39,8 +40,32 @@ function list(items) {
   )
 }
 
-const CommonRender = {
-  card,
-  list
+function headerList(items) {
+  const columns = []
+  
+  for(let i=0; i<items.length; i++){
+    if(i !== 0){
+      columns.push(<div className="v-divider"></div>)
+    }
+    columns.push((
+      <div className="col mt-3">
+        <h5>{items[i][0]}</h5>
+        {items[i][1]}
+      </div>
+    ))
+  }
+  return (
+    <div className="container headerList">
+      <div className="row">
+        {columns}
+      </div>
+    </div>
+  )
 }
-export default CommonRender
+
+const CommonComponents = {
+  card,
+  list,
+  headerList
+}
+export default CommonComponents
