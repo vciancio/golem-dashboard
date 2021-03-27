@@ -141,7 +141,7 @@ class NodeInfo extends React.Component {
           <div className="row">
             {CommonComponents.headerList(items)}
           </div>
-          <div className="row mt-5">
+          <div className="row mt-3">
             <div className="col">
               <button className="btn btn-primary" onClick={this._retryFetch}>Retry</button>
             </div>
