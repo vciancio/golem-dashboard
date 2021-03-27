@@ -1,9 +1,10 @@
+import './NodeInfo.css';
 import React from 'react';
 import GolemNodeApi from '../../utils/GolemNodeApi';
 import GaugeChart from 'react-gauge-chart';
 import ZSyncApi from '../../utils/ZSyncApi';
 import EnvConfig from '../../utils/EnvConfig';
-import CommonRender from '../../utils/CommonRender'
+import CommonComponents from '../common/CommonComponents'
 
 // import { getDefaultProvider, Wallet } from 'zksync'
 // import { ethers } from 'ethers'
@@ -133,46 +134,138 @@ class NodeInfo extends React.Component {
 
   _renderNode(node) {
     let name = node.info.name
+    // return (
+    //   <div className="container-fluid">
+    //     <h2>{name}</h2>
+    //     <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
+    //       {this._renderNetwork(node)}
+    //       {this._renderWallet(
+    //         this.state.ethAddr,
+    //         this.state.token,
+    //         this.state.glmBalance)}
+    //       {this._renderTasks(node)}
+    //       {this._renderCpu(node)}
+    //       {this._renderMemory(node)}
+    //     </div>
+    //   </div>
+    // );
+
+
     return (
-      <div className="container-fluid">
-        <h2>{name}</h2>
-        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
-          {this._renderNetwork(node)}
-          {this._renderWallet(
-            this.state.ethAddr,
-            this.state.token,
-            this.state.glmBalance)}
-          {this._renderTasks(node)}
-          {this._renderCpu(node)}
-          {this._renderMemory(node)}
+      <div className="card">
+        <h2 className="card-title">{name}</h2>
+        <div className="container-fluid">
+          <div className="row">
+            {this._renderStatus(node)}
+          </div>
+          <div className="row mt-3">
+            {this._renderHardware(node)}
+            {this._renderTotalTasks(node)}
+            {this._renderPayment(
+              node,
+              this.state.ethAddr,
+              this.state.token,
+              this.state.glmBalance)}
+          </div>
         </div>
       </div>
-    );
+    )
+  }
+
+  _renderStatus(node) {
+    const status = node.hardware.isProcessingTask
+      ? (<div className="running">Running Task</div>)
+      : (<div className="standby">Waiting for Task</div>);
+
+    return CommonComponents.headerList([
+      ["Status", status],
+      ["Uptime", "188h 19m"],
+      ["Version", node.info.version],
+      // ["Last Task", "5m ago"],
+    ])
+  }
+
+  _renderHardware(node) {
+    const memoryPercent = node.hardware.memory.percent
+    const cpuUsage = node.hardware.cpu.percentUsage
+    const cpuRend = cpuUsage.toString() + "%"
+
+    let cpuClass;
+    if (cpuUsage > 75) {
+      cpuClass = "percent-high"
+    } else if (cpuUsage > 25) {
+      cpuClass = "percent-mid"
+    } else {
+      cpuClass = ""
+    }
+
+    const list = CommonComponents.list([
+      ["CPU Usage", (<span className={cpuClass}>{cpuRend}</span>)],
+      ["Used Memory", memoryPercent.toString() + "%"],
+    ]);
+    return (
+      <div className="col mt-2">
+        <h5>System</h5>
+        {list}
+      </div>
+    )
+  }
+
+  _renderTotalTasks(node) {
+    const tasks = node.info.processedTotal;
+    const tasks1h = node.info.processedLastHour;
+    const rend = CommonComponents.list([
+      ["Total # of Tasks", tasks],
+      ["Tasks past hour", tasks1h]
+    ])
+    return (
+      <div className="col mt-2">
+        <h5>Tasks</h5>
+        {rend}
+      </div>
+    )
+  }
+
+  _renderPayment(node, ethAddr, token, balance) {
+    const items = [
+      ["Network", node.info.network],
+      ["Subnet", node.info.subnet],
+      ["Wallet", _shrinkWallet(ethAddr)],
+      ["Balance", _formatBalance(balance).toString() + " " + token]
+    ]
+
+    return (
+      <div className="col mt-2">
+        <h5>Payment</h5>
+        {CommonComponents.list(items)}
+      </div>
+    )
   }
 
   _renderNetwork(node) {
-    const listRend = CommonRender.list([
+    const listRend = CommonComponents.list([
       ["Version", node.info.version],
       ["Network", node.info.network],
       ["Subnet", node.info.subnet],
     ])
-    return CommonRender.card(
+    return CommonComponents.card(
       "Node Info", listRend, "col-md-4")
   }
 
   _renderTasks(node) {
     const isProcessing = node.hardware.isProcessingTask
-    const listRend = CommonRender.list([
+    const listRend = CommonComponents.list([
       ["All Time", node.info.processedTotal],
       ["Last Hour", node.info.processedLastHour],
       ["Is Running Task", isProcessing == null ? 'unknown' : isProcessing.toString()]
     ])
-    return CommonRender.card("Tasks Processed", listRend)
+    // return CommonComponents.card("Tasks Processed", listRend)
+    return listRend
   }
 
   _renderCpu(node) {
     let cpuPercent = node.hardware.cpu.percentUsage
-    return CommonRender.card("CPU Usage", (
+    return CommonComponents.card("CPU Usage", (
       <GaugeChart id="gauge-cpu"
         nrOfLevels={31}
         colors={["#09af00", "#F44336"]}
@@ -186,7 +279,7 @@ class NodeInfo extends React.Component {
 
   _renderMemory(node) {
     let memoryPercent = node.hardware.memory.percent
-    return CommonRender.card("Memory Usage", (
+    return CommonComponents.card("Memory Usage", (
       <GaugeChart id="gauge-memory"
         nrOfLevels={31}
         colors={["#09af00", "#F44336"]}
@@ -204,21 +297,11 @@ class NodeInfo extends React.Component {
     }
 
     // ETH Addresses are really long, need to shorten to only 4 decimal places.
-    const wallet = [
-      ethAddr.substring(0, 5),
-      ethAddr.substring(ethAddr.length - 3, ethAddr.length)
-    ].join('...')
+    const wallet = _shrinkWallet(ethAddr)
 
-    // Balances are really long, need to shorten to only 4 decimal places.
-    let friendlyBalance = balance == null ?
-      "unknown" :
-      Math.floor(balance * 1000000) / 1000000
+    const friendlyBalance = _formatBalance(balance)
 
-    if (typeof friendlyBalance !== 'string') {
-      friendlyBalance = friendlyBalance.toString() + '...'
-    }
-
-    const rendList = CommonRender.list([
+    const rendList = CommonComponents.list([
       ["Address", wallet],
       [`${token} in ZkSync`, friendlyBalance],
     ])
@@ -228,11 +311,31 @@ class NodeInfo extends React.Component {
       <a class="btn btn-primary" href={link}>View in ZkScan</a>
     )
 
-    return CommonRender.card("Payment Info", [
+    return CommonComponents.card("Payment Info", [
       rendList,
       rendButton
     ])
   }
+}
+
+/** ETH Addresses are really long, need to shorten to only 4 decimal places. */
+function _shrinkWallet(ethAddr) {
+  return [
+    ethAddr.substring(0, 5),
+    ethAddr.substring(ethAddr.length - 3, ethAddr.length)
+  ].join('...')
+}
+
+/** Balances are really long, need to shorten to only 4 decimal places. */
+function _formatBalance(balance) {
+  let friendlyBalance = balance == null ?
+    "unknown" :
+    Math.floor(balance * 1000000) / 1000000
+
+  if (typeof friendlyBalance !== 'string') {
+    friendlyBalance = friendlyBalance.toString() + '...'
+  }
+  return friendlyBalance
 }
 
 export default NodeInfo;

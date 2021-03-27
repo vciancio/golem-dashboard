@@ -1,12 +1,24 @@
 .card {
-    border-radius: 25px;
-    background: #12188c;
-    padding: 20px; 
-    width: 200px;
-    height: 150px;  
-  }
-
-.card h2 {
-  color: white;
+    margin: auto; 
+    min-width: 50%;
 }
-  
+
+.percent-high {
+    color: lightcoral;
+}
+
+.percent-mid {
+    color: lightsalmon;
+}
+
+.percent-low {
+    color: lightgreen;
+}
+
+.running {
+    color: lightgreen;
+}
+
+.standby {
+    color: lightskyblue;
+}
