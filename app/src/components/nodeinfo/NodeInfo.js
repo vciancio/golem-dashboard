@@ -107,23 +107,45 @@ class NodeInfo extends React.Component {
   }
 
   _renderLoading() {
+    const address = this.props.address
+    const items = [
+      ["Status", (<div className="spinner-border" role="status" />)],
+      ["Version"],
+      ["Network"]
+    ]
+
     return (
       <div className="card">
-        <h2>{this.props.address}</h2>
-        <div className="d-flex justify-content-center">
-          <div className="spinner-border" role="status" />
+        <h2 className="card-title">{address}</h2>
+        <div className="container-fluid">
+          <div className="row">
+            {CommonComponents.headerList(items)}
+          </div>
         </div>
       </div>
     );
   }
 
   _renderLoadFailed() {
+    const address = this.props.address
+    const items = [
+      ["Status", (<span className="offline" role="status">Offline</span>)],
+      ["Version"],
+      ["Network"]
+    ]
+
     return (
       <div className="card">
-        <h2>{this.props.address}</h2>
-        <div className="card-body">
-          <h5>Failed to connect</h5>
-          <button className="btn btn-primary" onClick={this._retryFetch}>Retry</button>
+        <h2 className="card-title">{address}</h2>
+        <div className="container-fluid">
+          <div className="row">
+            {CommonComponents.headerList(items)}
+          </div>
+          <div className="row mt-5">
+            <div className="col">
+              <button className="btn btn-primary" onClick={this._retryFetch}>Retry</button>
+            </div>
+          </div>
         </div>
       </div>
     )

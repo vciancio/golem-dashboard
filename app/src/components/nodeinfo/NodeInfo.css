@@ -22,3 +22,7 @@
 .standby {
     color: lightskyblue;
 }
+
+.offline {
+    color: lightcoral
+}
