@@ -48,7 +48,7 @@ function headerList(items) {
       columns.push(<div className="v-divider"></div>)
     }
     columns.push((
-      <div className="col">
+      <div className="col mt-3">
         <h5>{items[i][0]}</h5>
         {items[i][1]}
       </div>

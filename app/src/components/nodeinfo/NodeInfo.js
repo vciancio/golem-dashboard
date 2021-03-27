@@ -6,9 +6,6 @@ import ZSyncApi from '../../utils/ZSyncApi';
 import EnvConfig from '../../utils/EnvConfig';
 import CommonComponents from '../common/CommonComponents'
 
-// import { getDefaultProvider, Wallet } from 'zksync'
-// import { ethers } from 'ethers'
-
 const POLL_INTERVAL = EnvConfig.pollingRate
 const POLL_INTERVAL_DEFAULT = 5000
 const LINK_ZKSCAN_ACCOUNT = "https://zkscan.io/explorer/accounts"
@@ -134,23 +131,6 @@ class NodeInfo extends React.Component {
 
   _renderNode(node) {
     let name = node.info.name
-    // return (
-    //   <div className="container-fluid">
-    //     <h2>{name}</h2>
-    //     <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
-    //       {this._renderNetwork(node)}
-    //       {this._renderWallet(
-    //         this.state.ethAddr,
-    //         this.state.token,
-    //         this.state.glmBalance)}
-    //       {this._renderTasks(node)}
-    //       {this._renderCpu(node)}
-    //       {this._renderMemory(node)}
-    //     </div>
-    //   </div>
-    // );
-
-
     return (
       <div className="card">
         <h2 className="card-title">{name}</h2>
@@ -161,6 +141,8 @@ class NodeInfo extends React.Component {
           <div className="row mt-3">
             {this._renderHardware(node)}
             {this._renderTotalTasks(node)}
+          </div>
+          <div className="row mt-3">
             {this._renderPayment(
               node,
               this.state.ethAddr,
@@ -177,11 +159,22 @@ class NodeInfo extends React.Component {
       ? (<div className="running">Running Task</div>)
       : (<div className="standby">Waiting for Task</div>);
 
+    const network = node.info.network
+    const subnet = node.info.subnet
+    const networkRend = (
+      <div>
+        {network}
+        <br />
+        {subnet}
+      </div>
+    )
+
     return CommonComponents.headerList([
       ["Status", status],
-      ["Uptime", "188h 19m"],
-      ["Version", node.info.version],
+      // ["Uptime", "188h 19m"],
       // ["Last Task", "5m ago"],
+      ["Version", node.info.version],
+      ["Network", networkRend]
     ])
   }
 
@@ -227,110 +220,56 @@ class NodeInfo extends React.Component {
   }
 
   _renderPayment(node, ethAddr, token, balance) {
-    const items = [
-      ["Network", node.info.network],
-      ["Subnet", node.info.subnet],
-      ["Wallet", _shrinkWallet(ethAddr)],
-      ["Balance", _formatBalance(balance).toString() + " " + token]
-    ]
-
-    return (
-      <div className="col mt-2">
-        <h5>Payment</h5>
-        {CommonComponents.list(items)}
+    const walletRend = (
+      <div className="col">
+        <h5>Wallet</h5>
+        {_shrinkWallet(ethAddr)}
       </div>
     )
-  }
 
-  _renderNetwork(node) {
-    const listRend = CommonComponents.list([
-      ["Version", node.info.version],
-      ["Network", node.info.network],
-      ["Subnet", node.info.subnet],
-    ])
-    return CommonComponents.card(
-      "Node Info", listRend, "col-md-4")
-  }
-
-  _renderTasks(node) {
-    const isProcessing = node.hardware.isProcessingTask
-    const listRend = CommonComponents.list([
-      ["All Time", node.info.processedTotal],
-      ["Last Hour", node.info.processedLastHour],
-      ["Is Running Task", isProcessing == null ? 'unknown' : isProcessing.toString()]
-    ])
-    // return CommonComponents.card("Tasks Processed", listRend)
-    return listRend
-  }
-
-  _renderCpu(node) {
-    let cpuPercent = node.hardware.cpu.percentUsage
-    return CommonComponents.card("CPU Usage", (
-      <GaugeChart id="gauge-cpu"
-        nrOfLevels={31}
-        colors={["#09af00", "#F44336"]}
-        arcWidth={0.3}
-        percent={cpuPercent / 100}
-        textColor="#000000"
-        animateDuration={3000}
-      />
-    ));
-  }
-
-  _renderMemory(node) {
-    let memoryPercent = node.hardware.memory.percent
-    return CommonComponents.card("Memory Usage", (
-      <GaugeChart id="gauge-memory"
-        nrOfLevels={31}
-        colors={["#09af00", "#F44336"]}
-        arcWidth={0.3}
-        percent={memoryPercent / 100}
-        textColor="#000000"
-        animateDuration={3000}
-      />
-    ));
-  }
-
-  _renderWallet(ethAddr, token, balance = -1) {
-    if (!ethAddr) {
-      return
-    }
-
-    // ETH Addresses are really long, need to shorten to only 4 decimal places.
-    const wallet = _shrinkWallet(ethAddr)
-
-    const friendlyBalance = _formatBalance(balance)
-
-    const rendList = CommonComponents.list([
-      ["Address", wallet],
-      [`${token} in ZkSync`, friendlyBalance],
-    ])
+    const balanceRend = (
+      <div className="col-6">
+        <h5>ZSync Balance</h5>
+        {_formatBalance(balance).toString() + " " + token}
+      </div>
+    )
 
     const link = `${LINK_ZKSCAN_ACCOUNT}/${ethAddr}`
     const rendButton = (
-      <a class="btn btn-primary" href={link}>View in ZkScan</a>
+      <div className="col">
+        <a class="btn btn-primary mt-2" href={link}>View in ZkScan</a>
+      </div>
     )
 
-    return CommonComponents.card("Payment Info", [
-      rendList,
-      rendButton
-    ])
+    return (
+      <div className="col mt-2 card">
+        <h5>Payment</h5>
+        <div className="container headerList">
+          <div className="row">
+            {walletRend}
+            {balanceRend}
+            {rendButton}
+          </div>
+        </div>
+      </div>
+    )
   }
 }
 
-/** ETH Addresses are really long, need to shorten to only 4 decimal places. */
+/** ETH Addresses are really long, need to shorten. */
 function _shrinkWallet(ethAddr) {
   return [
-    ethAddr.substring(0, 5),
-    ethAddr.substring(ethAddr.length - 3, ethAddr.length)
+    ethAddr.substring(0, 6),
+    ethAddr.substring(ethAddr.length - 5, ethAddr.length)
   ].join('...')
 }
 
-/** Balances are really long, need to shorten to only 4 decimal places. */
-function _formatBalance(balance) {
+/** Balances are really long, need to shorten. */
+function _formatBalance(balance, decimals = 7) {
+  const mod = Math.pow(10, decimals)
   let friendlyBalance = balance == null ?
     "unknown" :
-    Math.floor(balance * 1000000) / 1000000
+    Math.floor(balance * mod) / mod
 
   if (typeof friendlyBalance !== 'string') {
     friendlyBalance = friendlyBalance.toString() + '...'
