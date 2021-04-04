@@ -15,17 +15,17 @@ class NodeInfo extends React.Component {
     this.state = {
       isLoaded: false
     };
-    this._processNode = this._processNode.bind(this);
+    this._onNodeUpdate = this._onNodeUpdate.bind(this);
+    this._onNodeError = this._onNodeError.bind(this);
+    this._subscribe = this._subscribe.bind(this);
   }
 
   componentDidMount() {
-    let address = this.props.address;
-    console.log('Subscribing to ' + address);
-    this.subscriber = GolemNodeSync.subscribeToNode(address, this._processNode)
+    this._subscribe()
   }
 
   componentWillUnmount() {
-    this.subscriber.unsubscribe()
+    if (this.subscriber) this.subscriber.unsubscribe()
     this.setState({
       isLoaded: false,
       fetchFailed: false,
@@ -35,7 +35,18 @@ class NodeInfo extends React.Component {
     })
   }
 
-  async _processNode(node) {
+  _subscribe() {
+    this.setState({
+      isLoaded: false,
+      fetchFailed: false,
+    });
+    let address = this.props.address;
+    console.log('Subscribing to ' + address);
+    this.subscriber =
+      GolemNodeSync.subscribeToNode(address, this._onNodeUpdate, this._onNodeError)
+  }
+
+  async _onNodeUpdate(node) {
     this.golemNode = node
     const token = node.info.network === 'mainnet' ? 'GLM' : 'tGLM'
     const glmBalance = await ZSyncApi.getBalance(
@@ -50,6 +61,16 @@ class NodeInfo extends React.Component {
       glmBalance: glmBalance,
       token: token
     });
+  }
+
+  async _onNodeError() {
+    console.log('Unsubscribing from ', this.props.address)
+    if(this.subscriber) this.subscriber.unsubscribe()
+    this.subscriber = null
+    this.setState({
+      isLoaded: false,
+      fetchFailed: true
+    })
   }
 
   render() {
@@ -104,7 +125,7 @@ class NodeInfo extends React.Component {
           </div>
           <div className="row mt-3">
             <div className="col">
-              <button className="btn btn-primary" onClick={this._retryFetch}>Retry</button>
+              <button className="btn btn-primary" onClick={this._subscribe}>Retry</button>
             </div>
           </div>
         </div>
@@ -220,7 +241,7 @@ class NodeInfo extends React.Component {
     const link = `${LINK_ZKSCAN_ACCOUNT}/${ethAddr}`
     const rendButton = (
       <div className="col">
-        <a class="btn btn-primary mt-2" href={link}>View in ZkScan</a>
+        <a className="btn btn-primary mt-2" href={link}>View in ZkScan</a>
       </div>
     )
 

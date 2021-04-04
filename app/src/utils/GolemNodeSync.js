@@ -19,7 +19,6 @@ class GolemNodeSync {
     this._isRunning = false
 
     this._loop = this._loop.bind(this)
-    this._cleanupSubjects = this._cleanupSubjects.bind(this)
     this._createNodeSubject = this._createNodeSubject.bind(this)
     Object.seal(this)
   }
@@ -30,11 +29,11 @@ class GolemNodeSync {
    * @param {Callback} subscription 
    * @returns {Subscriber} subscriber
    */
-  subscribeToNode(address, subscription) {
+  subscribeToNode(address, onUpdate, onError) {
     if (!(address in this._nodes)) {
       this._createNodeSubject(address)
     }
-    const subscriber = this._nodes[address].subscribe(subscription)
+    const subscriber = this._nodes[address].subscribe(onUpdate, onError)
 
     if (!this._isRunning) {
       console.log('Starting Polling Loop')
@@ -71,7 +70,7 @@ class GolemNodeSync {
     }
     this._timer = null
 
-    this._cleanupSubjects()
+    // this._cleanupSubjects()
 
     const addresses = Object.keys(this._nodes)
     // Stop running if we don't have any addresses to process
@@ -84,24 +83,10 @@ class GolemNodeSync {
     // Process our Nodes
     const promises = addresses.map((v) => this._processAddress(v))
     await Promise.all(promises)
-    console.log('finished processing')
+    console.log('Finished processing')
 
     // Start the loop all over again
     this._timer = setTimeout(() => this._loop(), POLLING_RATE);
-  }
-
-  /**
-   * Cleans up dangling Subjects that don't have any
-   * subscribers
-   */
-  _cleanupSubjects() {
-    const addresses = Object.keys(this._nodes)
-    addresses.forEach((address) => {
-      if (this._nodes[address].observers.length < 1) {
-        console.log('Cleanup: Deleting Subject for ', address)
-        delete this._nodes[address]
-      }
-    })
   }
 
   /**
@@ -126,7 +111,9 @@ class GolemNodeSync {
     } catch (e) {
       const msg = 'Failed to load data for ' + address
       console.error(msg, e)
-      subject.error(new Error(msg))
+      subject.error(e)
+      delete this._nodes[address]
+      console.warn('Removing ', address, ' from polling list')
     }
   }
 }
