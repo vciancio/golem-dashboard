@@ -1,38 +1,31 @@
 import './NodeInfo.css';
 import React from 'react';
-import GolemNodeApi from '../../utils/GolemNodeApi';
-import GaugeChart from 'react-gauge-chart';
 import ZSyncApi from '../../utils/ZSyncApi';
-import EnvConfig from '../../utils/EnvConfig';
+import GolemNodeSync from '../../utils/GolemNodeSync';
 import CommonComponents from '../common/CommonComponents'
 
-const POLL_INTERVAL = EnvConfig.pollingRate
-const POLL_INTERVAL_DEFAULT = 5000
 const LINK_ZKSCAN_ACCOUNT = "https://zkscan.io/explorer/accounts"
 
 class NodeInfo extends React.Component {
   golemNode = null
-  timer = null
+  subscriber = null
 
   constructor(props) {
     super(props);
     this.state = {
       isLoaded: false
     };
-    this._retryFetch = this._retryFetch.bind(this);
-    this._pollFetch = this._pollFetch.bind(this);
-    this._fetchNodeInfo = this._fetchNodeInfo.bind(this);
+    this._processNode = this._processNode.bind(this);
   }
 
   componentDidMount() {
     let address = this.props.address;
-    console.log('Initial Fetch: ' + address);
-    this._fetchNodeInfo(address);
+    console.log('Subscribing to ' + address);
+    this.subscriber = GolemNodeSync.subscribeToNode(address, this._processNode)
   }
 
   componentWillUnmount() {
-    clearTimeout(this.timer);
-    this.timer = null;
+    this.subscriber.unsubscribe()
     this.setState({
       isLoaded: false,
       fetchFailed: false,
@@ -42,53 +35,21 @@ class NodeInfo extends React.Component {
     })
   }
 
-  _retryFetch() {
-    this.setState({ isLoaded: false, fetchFailed: false });
-    let address = this.props.address;
-    console.log('Retry Fetch: ' + address);
-    this._fetchNodeInfo(address)
-  }
-
-  _pollFetch() {
-    if (!this.state.isLoaded || this.state.fetchFailed) {
-      // Don't try to poll if we aren't loaded right now
-      return
-    }
-    let address = this.props.address;
-    this._fetchNodeInfo(address)
-  }
-
-  async _fetchNodeInfo(address) {
-    if (!address) {
-      return
-    }
-
-    clearTimeout(this.timer)
-    this.timer = null
-
-    try {
-      const node = await GolemNodeApi.getNodeInfo(address)
-      this.golemNode = node
-      const token = node.info.network === 'mainnet' ? 'GLM' : 'tGLM'
-      const glmBalance = await ZSyncApi.getBalance(
-        node.info.network,
-        node.info.wallet,
-        token
-      )
-      this.setState({
-        isLoaded: true,
-        fetchFailed: false,
-        ethAddr: node.info.wallet,
-        glmBalance: glmBalance,
-        token: token
-      });
-      // Start our timer 
-      const interval = POLL_INTERVAL ? POLL_INTERVAL : POLL_INTERVAL_DEFAULT;
-      this.timer = setTimeout(() => this._pollFetch(), interval);
-    } catch (e) {
-      console.log('Failed to load data for ' + address, e)
-      this.setState({ isLoaded: false, fetchFailed: true });
-    };
+  async _processNode(node) {
+    this.golemNode = node
+    const token = node.info.network === 'mainnet' ? 'GLM' : 'tGLM'
+    const glmBalance = await ZSyncApi.getBalance(
+      node.info.network,
+      node.info.wallet,
+      token
+    )
+    this.setState({
+      isLoaded: true,
+      fetchFailed: false,
+      ethAddr: node.info.wallet,
+      glmBalance: glmBalance,
+      token: token
+    });
   }
 
   render() {
