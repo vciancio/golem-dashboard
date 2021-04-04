@@ -43,24 +43,13 @@ class GolemNodeSync {
     return subscriber
   }
 
-  /**
-   * @param {String} address 
-   * @param {Callback} subscription 
-   */
-  unsubscribeFromNode(address, subscription) {
-    if (!(address in this._nodes)) {
-      return
-    }
-    this._nodes[address].unsubscribe(subscription)
-  }
-
   _createNodeSubject(address) {
     this._nodes[address] = new Subject()
   }
 
   async _loop() {
     if (!this._isRunning) {
-      console.warn('Loop not supposed to be running...')
+      console.warn('Loop is not supposed to be running...')
       return
     }
 
@@ -69,8 +58,6 @@ class GolemNodeSync {
       clearTimeout(this._timer)
     }
     this._timer = null
-
-    // this._cleanupSubjects()
 
     const addresses = Object.keys(this._nodes)
     // Stop running if we don't have any addresses to process
