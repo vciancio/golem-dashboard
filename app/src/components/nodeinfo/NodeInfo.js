@@ -3,6 +3,8 @@ import React from 'react';
 import ZSyncApi from '../../utils/ZSyncApi';
 import GolemNodeSync from '../../utils/GolemNodeSync';
 import CommonComponents from '../common/CommonComponents'
+import PercentText from '../common/percenttext'
+import { ProviderStatus, ProviderState } from '../common/providerstatus'
 
 const LINK_ZKSCAN_ACCOUNT = "https://zkscan.io/explorer/accounts"
 
@@ -160,8 +162,8 @@ class NodeInfo extends React.Component {
 
   _renderStatus(node) {
     const status = node.hardware.isProcessingTask
-      ? (<div className="running">Running Task</div>)
-      : (<div className="standby">Waiting for Task</div>);
+      ? ProviderState.RUNNING
+      : ProviderState.WAITING;
 
     const network = node.info.network
     const subnet = node.info.subnet
@@ -174,7 +176,7 @@ class NodeInfo extends React.Component {
     )
 
     return CommonComponents.headerList([
-      ["Status", status],
+      ["Status", (<ProviderStatus state={status}/>)],
       // ["Uptime", "188h 19m"],
       // ["Last Task", "5m ago"],
       ["Version", node.info.version],
@@ -184,20 +186,10 @@ class NodeInfo extends React.Component {
 
   _renderHardware(node) {
     const memoryPercent = node.hardware.memory.percent
-    const cpuUsage = Math.round(node.hardware.cpu.percentUsage)
-    const cpuRend = cpuUsage.toString() + "%"
-
-    let cpuClass;
-    if (cpuUsage >= 80) {
-      cpuClass = "percent-high"
-    } else if (cpuUsage >= 50) {
-      cpuClass = "percent-mid"
-    } else {
-      cpuClass = ""
-    }
+    const cpuUsage = node.hardware.cpu.percentUsage
 
     const list = CommonComponents.list([
-      ["CPU Usage", (<span className={cpuClass}>{cpuRend}</span>)],
+      ["CPU Usage", (<PercentText value={cpuUsage}/>)],
       ["Used Memory", memoryPercent.toString() + "%"],
     ]);
     return (

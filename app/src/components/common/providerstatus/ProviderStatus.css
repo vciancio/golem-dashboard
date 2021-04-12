@@ -1,0 +1,12 @@
+.running {
+    color: lightgreen;
+  }
+  
+  .standby {
+    color: lightskyblue;
+  }
+  
+  .offline {
+    color: lightcoral
+  }
+  
