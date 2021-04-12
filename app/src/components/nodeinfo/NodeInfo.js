@@ -113,7 +113,7 @@ class NodeInfo extends React.Component {
   _renderLoadFailed() {
     const address = this.props.address
     const items = [
-      ["Status", (<span className="offline" role="status">Offline</span>)],
+      ["Status", (<ProviderStatus state={ProviderState.OFFLINE}/>)],
       ["Version"],
       ["Network"]
     ]
