@@ -1,10 +1,10 @@
-import GolemNode from '../models/GolemNode';
+import GolemProvider from '../models/GolemProvider';
 
 const headers = {
     'Content-Type': 'application/json',
 }
 
-async function getNodeInfo(address) {
+async function getNodeInfo(address: String): Promise<GolemProvider|null> {
     if(!address){
         console.log('getNodeInfo: Address was null');
         return null;
@@ -16,8 +16,8 @@ async function getNodeInfo(address) {
         headers: headers,
     });
     if(req.ok){
-        let json = await req.json();
-        return new GolemNode(json);
+        let provider: GolemProvider = await req.json();
+        return provider
     }
     return null;
 }

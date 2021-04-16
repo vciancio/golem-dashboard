@@ -1,20 +1,19 @@
-import { Subject } from 'rxjs'
+import { ReplaySubject } from 'rxjs'
+import GolemProvider from '../models/GolemProvider';
 import EnvConfig from './EnvConfig'
 import GolemNodeApi from './GolemNodeApi'
 
-const POLL_INTERVAL_DEFAULT = 5000
-const POLLING_RATE = EnvConfig.pollingRate ? EnvConfig.pollingRate : POLL_INTERVAL_DEFAULT;
+const POLL_INTERVAL_DEFAULT: number = 5000
+const POLLING_RATE: number = EnvConfig.pollingRate ? +EnvConfig.pollingRate : POLL_INTERVAL_DEFAULT;
 
 class GolemNodeSync {
 
-  /*
-   * _nodes: {
-   *  "192.168.1.100" : ReplaySubject (Golem Node)
-   * }
-   */
+  _nodes: Map<String, ReplaySubject<GolemProvider>>
+  _timer: NodeJS.Timeout | null
+  _isRunning: Boolean
 
   constructor() {
-    this._nodes = {}
+    this._nodes = new Map()
     this._timer = null
     this._isRunning = false
 
@@ -23,17 +22,16 @@ class GolemNodeSync {
     Object.seal(this)
   }
 
-  /**
-   * Recieve updates for a node
-   * @param {String} address 
-   * @param {Callback} subscription 
-   * @returns {Subscriber} subscriber
-   */
-  subscribeToNode(address, onUpdate, onError) {
-    if (!(address in this._nodes)) {
+  /** Recieve updates for a node */
+  subscribeToNode(
+    address: String,
+    onUpdate: (g: GolemProvider) => void,
+    onError: (e: Error) => void) {
+
+    if (!this._nodes.has(address)) {
       this._createNodeSubject(address)
     }
-    const subscriber = this._nodes[address].subscribe(onUpdate, onError)
+    const subscriber = this._nodes.get(address)!!.subscribe(onUpdate, onError)
 
     if (!this._isRunning) {
       console.log('Starting Polling Loop')
@@ -43,8 +41,9 @@ class GolemNodeSync {
     return subscriber
   }
 
-  _createNodeSubject(address) {
-    this._nodes[address] = new Subject()
+  _createNodeSubject(address: String) {
+    this._nodes.set(address, new ReplaySubject<GolemProvider>())
+    console.log('Keys: ', this._nodes.keys())
   }
 
   async _loop() {
@@ -59,7 +58,7 @@ class GolemNodeSync {
     }
     this._timer = null
 
-    const addresses = Object.keys(this._nodes)
+    const addresses = Array.from(this._nodes.keys())
     // Stop running if we don't have any addresses to process
     if (addresses.length === 0) {
       this._isRunning = false
@@ -67,7 +66,7 @@ class GolemNodeSync {
       return
     }
 
-    // Process our Nodes
+    // Process all of the Nodes
     const promises = addresses.map((v) => this._processAddress(v))
     await Promise.all(promises)
     console.log('Finished processing')
@@ -76,17 +75,14 @@ class GolemNodeSync {
     this._timer = setTimeout(() => this._loop(), POLLING_RATE);
   }
 
-  /**
-   * Fetch a node and send it to subscribers
-   * @param {String} address 
-   */
-  async _processAddress(address) {
+  /** Fetch a node and send it to subscribers */
+  async _processAddress(address: String) {
     if (!address) {
       console.error('Recieved null address')
       return
     }
 
-    const subject = this._nodes[address]
+    const subject = this._nodes.get(address)
     if (!subject) {
       console.error('No Subject for ' + address)
       return
@@ -94,12 +90,18 @@ class GolemNodeSync {
 
     try {
       const node = await GolemNodeApi.getNodeInfo(address)
+      if (!node) {
+        this._nodes.delete(address)
+        subject.error(new Error('No node for address'))
+        console.warn('Removing ', address, ' from polling list')
+        return
+      }
       subject.next(node)
     } catch (e) {
       const msg = 'Failed to load data for ' + address
       console.error(msg, e)
       subject.error(e)
-      delete this._nodes[address]
+      this._nodes.delete(address)
       console.warn('Removing ', address, ' from polling list')
     }
   }
