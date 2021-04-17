@@ -7,15 +7,15 @@ enum ProviderState {
   RUNNING = 1
 }
 
-type Props = {
+type IProps = {
   state: ProviderState
 }
 
-class ProviderStatus extends React.Component {
+class ProviderStatus extends React.Component<IProps> {
 
   _state: ProviderState = ProviderState.OFFLINE
 
-  constructor(props: Props) {
+  constructor(props: IProps) {
     super(props)
     this._state = props.state
   }
