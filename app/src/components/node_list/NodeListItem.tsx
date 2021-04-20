@@ -5,7 +5,8 @@ import GolemProvider from '../../models/GolemProvider';
 import { ProviderStatus, ProviderState } from '../common/providerstatus'
 
 type Properties = {
-  address: string
+  address: string,
+  expandNode: Function
 }
 
 type State = {
@@ -74,7 +75,9 @@ class NodeListItem extends React.Component<Properties, State> {
     this.setState({
       isLoaded: false,
       fetchFailed: true,
+      name: this.props.address,
       tasks: 0,
+      tasksHour: 0,
       cpuPercent: 0,
       status: ProviderState.OFFLINE,
     })
@@ -85,35 +88,48 @@ class NodeListItem extends React.Component<Properties, State> {
       return (<div />)
     }
     if (!this.state.isLoaded && !this.state.fetchFailed) {
-      return (
-        <div className="card">Loading</div>
-      )
-    } else if (this.state.fetchFailed) {
-      return (
-        <div className="card">Failed</div>
-      )
-    }
-    else {
+      return this._renderLoading()
+    } else {
       return this._renderRow()
     }
   }
 
-  _renderRow() {    
+  _renderLoading() {
     return (
-        <div className="row">
-          <div className="col">
-            <p>{this.state.name}</p>
-          </div>
-          <div className="col">
-            <ProviderStatus state={this.state.status}/>
-          </div>
-          <div className="col">
-            <p>{this.state.tasks}</p>
-          </div>
-          <div className="col">
-            <p>{this.state.tasksHour}</p>
-          </div>
+      <div className="row">
+        <div className="col">
+          <p>{this.props.address}</p>
         </div>
+        <div className="col">
+          <p>Loading...</p>
+        </div>
+        <div className="col">
+        </div>
+        <div className="col">
+        </div>
+      </div>
+    )
+  }
+
+  _renderRow() {
+    return (
+      <div className="row">
+        <div className="col">
+          <p>
+            {this.state.name}
+            <a onClick={() => this.props.expandNode(this.props.address)} href="#"><i className="fas fa-expand-alt expand-provider"></i></a>
+          </p>
+        </div>
+        <div className="col">
+          <ProviderStatus state={this.state.status} />
+        </div>
+        <div className="col">
+          <p>{this.state.tasks}</p>
+        </div>
+        <div className="col">
+          <p>{this.state.tasksHour}</p>
+        </div>
+      </div>
     )
   }
 }

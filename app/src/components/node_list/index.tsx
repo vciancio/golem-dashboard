@@ -1,16 +1,24 @@
 import * as React from 'react';
+import NodeInfoDialog from '../nodeinfo/NodeInfoDialog';
 import NodeListItem from './NodeListItem';
+import './NodeListItem.css'
 
 type IProperties = {
-  addresses: string[]
+  addresses: string[],
+  expandNode: Function
 }
-
 
 class NodeList extends React.Component<IProperties> {
 
+  constructor(props: IProperties){
+    super(props)
+  }
+
   render() {
     const nodes = this.props.addresses.map((address) => {
-      return <NodeListItem address={address}/>
+      return (
+        <NodeListItem address={address} expandNode={this.props.expandNode}/>
+      )
     })
   
     return (
