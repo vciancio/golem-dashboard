@@ -5,6 +5,10 @@ import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+const script = document.createElement("script");
+script.src = "https://kit.fontawesome.com/08463c5670.js";
+script.crossOrigin = "anonymous"
+document.head.appendChild(script);
 
 ReactDOM.render(
   <React.StrictMode>

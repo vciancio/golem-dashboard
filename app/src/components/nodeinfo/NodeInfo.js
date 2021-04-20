@@ -3,6 +3,8 @@ import React from 'react';
 import ZSyncApi from '../../utils/ZSyncApi';
 import GolemNodeSync from '../../utils/GolemNodeSync';
 import CommonComponents from '../common/CommonComponents'
+import PercentText from '../common/percenttext'
+import { ProviderStatus, ProviderState } from '../common/providerstatus'
 
 const LINK_ZKSCAN_ACCOUNT = "https://zkscan.io/explorer/accounts"
 
@@ -65,7 +67,7 @@ class NodeInfo extends React.Component {
 
   async _onNodeError() {
     console.log('Unsubscribing from ', this.props.address)
-    if(this.subscriber) this.subscriber.unsubscribe()
+    if (this.subscriber) this.subscriber.unsubscribe()
     this.subscriber = null
     this.setState({
       isLoaded: false,
@@ -89,7 +91,6 @@ class NodeInfo extends React.Component {
   }
 
   _renderLoading() {
-    const address = this.props.address
     const items = [
       ["Status", (<div className="spinner-border" role="status" />)],
       ["Version"],
@@ -97,36 +98,29 @@ class NodeInfo extends React.Component {
     ]
 
     return (
-      <div className="card">
-        <h2 className="card-title">{address}</h2>
-        <div className="container-fluid">
-          <div className="row">
-            {CommonComponents.headerList(items)}
-          </div>
+      <div className="container-fluid">
+        <div className="row">
+          {CommonComponents.headerList(items)}
         </div>
       </div>
     );
   }
 
   _renderLoadFailed() {
-    const address = this.props.address
     const items = [
-      ["Status", (<span className="offline" role="status">Offline</span>)],
+      ["Status", (<ProviderStatus state={ProviderState.OFFLINE} />)],
       ["Version"],
       ["Network"]
     ]
 
     return (
-      <div className="card">
-        <h2 className="card-title">{address}</h2>
-        <div className="container-fluid">
-          <div className="row">
-            {CommonComponents.headerList(items)}
-          </div>
-          <div className="row mt-3">
-            <div className="col">
-              <button className="btn btn-primary" onClick={this._subscribe}>Retry</button>
-            </div>
+      <div className="container-fluid">
+        <div className="row">
+          {CommonComponents.headerList(items)}
+        </div>
+        <div className="row mt-3">
+          <div className="col">
+            <button className="btn btn-primary" onClick={this._subscribe}>Retry</button>
           </div>
         </div>
       </div>
@@ -134,25 +128,21 @@ class NodeInfo extends React.Component {
   }
 
   _renderNode(node) {
-    let name = node.info.name
     return (
-      <div className="card">
-        <h2 className="card-title">{name}</h2>
-        <div className="container-fluid">
-          <div className="row">
-            {this._renderStatus(node)}
-          </div>
-          <div className="row mt-3">
-            {this._renderHardware(node)}
-            {this._renderTotalTasks(node)}
-          </div>
-          <div className="row mt-3">
-            {this._renderPayment(
-              node,
-              this.state.ethAddr,
-              this.state.token,
-              this.state.glmBalance)}
-          </div>
+      <div className="container-fluid">
+        <div className="row">
+          {this._renderStatus(node)}
+        </div>
+        <div className="row mt-3">
+          {this._renderHardware(node)}
+          {this._renderTotalTasks(node)}
+        </div>
+        <div className="row mt-3">
+          {this._renderPayment(
+            node,
+            this.state.ethAddr,
+            this.state.token,
+            this.state.glmBalance)}
         </div>
       </div>
     )
@@ -160,8 +150,8 @@ class NodeInfo extends React.Component {
 
   _renderStatus(node) {
     const status = node.hardware.isProcessingTask
-      ? (<div className="running">Running Task</div>)
-      : (<div className="standby">Waiting for Task</div>);
+      ? ProviderState.RUNNING
+      : ProviderState.WAITING;
 
     const network = node.info.network
     const subnet = node.info.subnet
@@ -174,7 +164,7 @@ class NodeInfo extends React.Component {
     )
 
     return CommonComponents.headerList([
-      ["Status", status],
+      ["Status", (<ProviderStatus state={status} />)],
       // ["Uptime", "188h 19m"],
       // ["Last Task", "5m ago"],
       ["Version", node.info.version],
@@ -184,20 +174,10 @@ class NodeInfo extends React.Component {
 
   _renderHardware(node) {
     const memoryPercent = node.hardware.memory.percent
-    const cpuUsage = Math.round(node.hardware.cpu.percentUsage)
-    const cpuRend = cpuUsage.toString() + "%"
-
-    let cpuClass;
-    if (cpuUsage >= 80) {
-      cpuClass = "percent-high"
-    } else if (cpuUsage >= 50) {
-      cpuClass = "percent-mid"
-    } else {
-      cpuClass = ""
-    }
+    const cpuUsage = node.hardware.cpu.percentUsage
 
     const list = CommonComponents.list([
-      ["CPU Usage", (<span className={cpuClass}>{cpuRend}</span>)],
+      ["CPU Usage", (<PercentText value={cpuUsage} />)],
       ["Used Memory", memoryPercent.toString() + "%"],
     ]);
     return (

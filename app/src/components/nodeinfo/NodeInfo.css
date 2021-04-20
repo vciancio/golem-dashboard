@@ -3,26 +3,10 @@
     min-width: 50%;
 }
 
-.percent-high {
-    color: lightcoral;
+.modal-dialog {
+    color: var(--color-text);
 }
 
-.percent-mid {
-    color: lightsalmon;
-}
-
-.percent-low {
-    color: lightgreen;
-}
-
-.running {
-    color: lightgreen;
-}
-
-.standby {
-    color: lightskyblue;
-}
-
-.offline {
-    color: lightcoral
+.modal-content {
+    background-color: var(--color-card);
 }
