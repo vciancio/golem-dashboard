@@ -1,5 +1,4 @@
 import * as React from 'react';
-import NodeInfoDialog from '../nodeinfo/NodeInfoDialog';
 import NodeListItem from './NodeListItem';
 import './NodeListItem.css'
 

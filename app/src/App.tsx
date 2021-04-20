@@ -1,7 +1,7 @@
 import './App.css';
 import NodeList from './components/node_list';
 import EnvConfig from './utils/EnvConfig';
-import NodeInfoDialog from './components/nodeinfo/NodeInfoDialog';
+import NodeInfo from './components/nodeinfo';
 import React from 'react';
 
 type IProps = {}
@@ -41,7 +41,7 @@ class App extends React.Component<IProps, IState> {
         <div className="container-fluid">
           <NodeList addresses={nodes} expandNode={(address: string) => this.setState({dialogAddress: address, isDialogVisible: true})}/>
         </div>
-        <NodeInfoDialog isVisible={this.state.isDialogVisible} address={this.state.dialogAddress} onHide={this._onHide}/>
+        <NodeInfo.Modal isVisible={this.state.isDialogVisible} address={this.state.dialogAddress} onHide={this._onHide}/>
       </div>
     );  
   }

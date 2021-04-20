@@ -67,7 +67,7 @@ class NodeInfo extends React.Component {
 
   async _onNodeError() {
     console.log('Unsubscribing from ', this.props.address)
-    if(this.subscriber) this.subscriber.unsubscribe()
+    if (this.subscriber) this.subscriber.unsubscribe()
     this.subscriber = null
     this.setState({
       isLoaded: false,
@@ -91,7 +91,6 @@ class NodeInfo extends React.Component {
   }
 
   _renderLoading() {
-    const address = this.props.address
     const items = [
       ["Status", (<div className="spinner-border" role="status" />)],
       ["Version"],
@@ -99,36 +98,29 @@ class NodeInfo extends React.Component {
     ]
 
     return (
-      <div className="card">
-        <h2 className="card-title">{address}</h2>
-        <div className="container-fluid">
-          <div className="row">
-            {CommonComponents.headerList(items)}
-          </div>
+      <div className="container-fluid">
+        <div className="row">
+          {CommonComponents.headerList(items)}
         </div>
       </div>
     );
   }
 
   _renderLoadFailed() {
-    const address = this.props.address
     const items = [
-      ["Status", (<ProviderStatus state={ProviderState.OFFLINE}/>)],
+      ["Status", (<ProviderStatus state={ProviderState.OFFLINE} />)],
       ["Version"],
       ["Network"]
     ]
 
     return (
-      <div className="card">
-        <h2 className="card-title">{address}</h2>
-        <div className="container-fluid">
-          <div className="row">
-            {CommonComponents.headerList(items)}
-          </div>
-          <div className="row mt-3">
-            <div className="col">
-              <button className="btn btn-primary" onClick={this._subscribe}>Retry</button>
-            </div>
+      <div className="container-fluid">
+        <div className="row">
+          {CommonComponents.headerList(items)}
+        </div>
+        <div className="row mt-3">
+          <div className="col">
+            <button className="btn btn-primary" onClick={this._subscribe}>Retry</button>
           </div>
         </div>
       </div>
@@ -136,25 +128,21 @@ class NodeInfo extends React.Component {
   }
 
   _renderNode(node) {
-    let name = node.info.name
     return (
-      <div className="card">
-        <h2 className="card-title">{name}</h2>
-        <div className="container-fluid">
-          <div className="row">
-            {this._renderStatus(node)}
-          </div>
-          <div className="row mt-3">
-            {this._renderHardware(node)}
-            {this._renderTotalTasks(node)}
-          </div>
-          <div className="row mt-3">
-            {this._renderPayment(
-              node,
-              this.state.ethAddr,
-              this.state.token,
-              this.state.glmBalance)}
-          </div>
+      <div className="container-fluid">
+        <div className="row">
+          {this._renderStatus(node)}
+        </div>
+        <div className="row mt-3">
+          {this._renderHardware(node)}
+          {this._renderTotalTasks(node)}
+        </div>
+        <div className="row mt-3">
+          {this._renderPayment(
+            node,
+            this.state.ethAddr,
+            this.state.token,
+            this.state.glmBalance)}
         </div>
       </div>
     )
@@ -176,7 +164,7 @@ class NodeInfo extends React.Component {
     )
 
     return CommonComponents.headerList([
-      ["Status", (<ProviderStatus state={status}/>)],
+      ["Status", (<ProviderStatus state={status} />)],
       // ["Uptime", "188h 19m"],
       // ["Last Task", "5m ago"],
       ["Version", node.info.version],
@@ -189,7 +177,7 @@ class NodeInfo extends React.Component {
     const cpuUsage = node.hardware.cpu.percentUsage
 
     const list = CommonComponents.list([
-      ["CPU Usage", (<PercentText value={cpuUsage}/>)],
+      ["CPU Usage", (<PercentText value={cpuUsage} />)],
       ["Used Memory", memoryPercent.toString() + "%"],
     ]);
     return (

@@ -2,3 +2,11 @@
     margin: auto; 
     min-width: 50%;
 }
+
+.modal-dialog {
+    color: var(--color-text);
+}
+
+.modal-content {
+    background-color: var(--color-card);
+}
