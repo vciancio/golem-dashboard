@@ -33,17 +33,15 @@ class NodeList extends React.Component<IProperties> {
       <div className="row">
         <div className="col">
           <p>Provider Name</p>
-          {/* <h4>{name}</h4> */}
         </div>
         <div className="col">
           <p>Status</p>
-          {/* <p>test2</p> */}
+        </div>
+        <div className="col">
+          <p>Version</p>
         </div>
         <div className="col">
           <p>Total # of Tasks</p>
-        </div>
-        <div className="col">
-          <p>Tasks Past Hour</p>
         </div>
       </div>
     )

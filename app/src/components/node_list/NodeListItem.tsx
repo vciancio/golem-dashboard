@@ -14,6 +14,7 @@ type State = {
   fetchFailed: Boolean,
   name: String | null,
   status: ProviderState,
+  version: String | null,
   tasks: Number | null,
   tasksHour: Number | null,
   cpuPercent: Number | null,
@@ -63,6 +64,7 @@ class NodeListItem extends React.Component<Properties, State> {
       isLoaded: true,
       fetchFailed: false,
       name: node.info.name,
+      version: node.info.version,
       tasks: node.info.processedTotal,
       tasksHour: node.info.processedLastHour,
       cpuPercent: node.hardware.cpu.percentUsage,
@@ -80,6 +82,7 @@ class NodeListItem extends React.Component<Properties, State> {
       isLoaded: false,
       fetchFailed: true,
       name: this.props.address,
+      version: null,
       tasks: 0,
       tasksHour: 0,
       cpuPercent: 0,
@@ -116,7 +119,6 @@ class NodeListItem extends React.Component<Properties, State> {
   }
 
   _renderRow() {
-
     const expandButton = this.state.status !== ProviderState.OFFLINE 
       ? <a onClick={() => this.props.expandNode(this.props.address)} href="#"><i className="fas fa-expand-alt expand-provider"></i></a>
       : null
@@ -133,10 +135,10 @@ class NodeListItem extends React.Component<Properties, State> {
           <ProviderStatus state={this.state.status} />
         </div>
         <div className="col">
-          <p>{this.state.tasks}</p>
+          <p>{this.state.version}</p>{}
         </div>
         <div className="col">
-          <p>{this.state.tasksHour}</p>
+          <p>{this.state.tasks}</p>
         </div>
       </div>
     )
