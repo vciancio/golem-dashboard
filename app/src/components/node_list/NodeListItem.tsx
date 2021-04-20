@@ -59,7 +59,10 @@ class NodeListItem extends React.Component<Properties, State> {
       GolemNodeSync.subscribeToNode(this._address, this._onNodeUpdate, this._onNodeError)
   }
 
-  async _onNodeUpdate(node: GolemProvider) {
+  async _onNodeUpdate(node: GolemProvider | null) {
+    if (node === null) {
+      return
+    }
     this.setState({
       isLoaded: true,
       fetchFailed: false,
@@ -119,7 +122,7 @@ class NodeListItem extends React.Component<Properties, State> {
   }
 
   _renderRow() {
-    const expandButton = this.state.status !== ProviderState.OFFLINE 
+    const expandButton = this.state.status !== ProviderState.OFFLINE
       ? <a onClick={() => this.props.expandNode(this.props.address)} href="#"><i className="fas fa-expand-alt expand-provider"></i></a>
       : null
 
@@ -135,7 +138,7 @@ class NodeListItem extends React.Component<Properties, State> {
           <ProviderStatus state={this.state.status} />
         </div>
         <div className="col">
-          <p>{this.state.version}</p>{}
+          <p>{this.state.version}</p>{ }
         </div>
         <div className="col">
           <p>{this.state.tasks}</p>

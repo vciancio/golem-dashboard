@@ -22,6 +22,7 @@ class NodeList extends React.Component<IProperties> {
   
     return (
       <div className="container mt-5">
+        <h3>Provider Nodes</h3>
         {this._renderHeader()}
         {nodes}
       </div>
@@ -30,7 +31,7 @@ class NodeList extends React.Component<IProperties> {
 
   _renderHeader() {
     return (
-      <div className="row">
+      <div className="row mt-3">
         <div className="col">
           <p>Provider Name</p>
         </div>
