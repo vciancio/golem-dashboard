@@ -3,6 +3,7 @@ import NodeList from './components/node_list';
 import EnvConfig from './utils/EnvConfig';
 import NodeInfo from './components/nodeinfo';
 import React from 'react';
+import Wallet from './components/wallet/Wallet';
 
 type IProps = {}
 
@@ -39,6 +40,7 @@ class App extends React.Component<IProps, IState> {
       <div className="App">
         <h1>Golem Dashboard</h1>
         <div className="container-fluid">
+          <Wallet addresses={nodes}/>
           <NodeList addresses={nodes} expandNode={(address: string) => this.setState({dialogAddress: address, isDialogVisible: true})}/>
         </div>
         <NodeInfo.Modal isVisible={this.state.isDialogVisible} address={this.state.dialogAddress} onHide={this._onHide}/>

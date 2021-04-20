@@ -1,4 +1,4 @@
-import { ReplaySubject } from 'rxjs'
+import { BehaviorSubject, ReplaySubject } from 'rxjs'
 import GolemProvider from '../models/GolemProvider';
 import EnvConfig from './EnvConfig'
 import GolemNodeApi from './GolemNodeApi'
@@ -8,7 +8,7 @@ const POLLING_RATE: number = EnvConfig.pollingRate ? +EnvConfig.pollingRate : PO
 
 class GolemNodeSync {
 
-  _nodes: Map<String, ReplaySubject<GolemProvider>>
+  _nodes: Map<String, BehaviorSubject<GolemProvider|null>>
   _timer: NodeJS.Timeout | null
   _isRunning: Boolean
 
@@ -22,10 +22,17 @@ class GolemNodeSync {
     Object.seal(this)
   }
 
+  async fetchNode(address: String): Promise<GolemProvider | null>{
+    if(this._nodes.has(address)){
+      return this._nodes.get(address)!!.getValue()
+    }
+    return await GolemNodeApi.getNodeInfo(address)
+  }
+
   /** Recieve updates for a node */
   subscribeToNode(
     address: String,
-    onUpdate: (g: GolemProvider) => void,
+    onUpdate: (g: GolemProvider|null) => void,
     onError: (e: Error) => void) {
 
     if (!this._nodes.has(address)) {
@@ -42,7 +49,7 @@ class GolemNodeSync {
   }
 
   _createNodeSubject(address: String) {
-    this._nodes.set(address, new ReplaySubject<GolemProvider>())
+    this._nodes.set(address, new BehaviorSubject<GolemProvider|null>(null))
     console.log('Keys: ', this._nodes.keys())
   }
 

@@ -37,7 +37,10 @@ class NodeInfoTitle extends React.Component<IProps, IState> {
       GolemNodeSync.subscribeToNode(this.props.address, this._onNodeUpdate, this._onNodeError)
   }
 
-  async _onNodeUpdate(node: GolemProvider) {
+  async _onNodeUpdate(node: GolemProvider | null) {
+    if (node === null) {
+      return
+    }
     this.setState({
       title: node.info.name
     })
