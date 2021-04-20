@@ -116,12 +116,17 @@ class NodeListItem extends React.Component<Properties, State> {
   }
 
   _renderRow() {
+
+    const expandButton = this.state.status !== ProviderState.OFFLINE 
+      ? <a onClick={() => this.props.expandNode(this.props.address)} href="#"><i className="fas fa-expand-alt expand-provider"></i></a>
+      : null
+
     return (
       <div className="row">
         <div className="col">
           <p>
             {this.state.name}
-            <a onClick={() => this.props.expandNode(this.props.address)} href="#"><i className="fas fa-expand-alt expand-provider"></i></a>
+            {expandButton}
           </p>
         </div>
         <div className="col">
