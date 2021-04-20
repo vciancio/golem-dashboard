@@ -43,6 +43,10 @@ class NodeListItem extends React.Component<Properties, State> {
     this._subscribe()
   }
 
+  componentWillUnmount() {
+    if (this.subscriber) this.subscriber.unsubscribe()
+  }
+
   _subscribe() {
     this.setState({
       isLoaded: false,
