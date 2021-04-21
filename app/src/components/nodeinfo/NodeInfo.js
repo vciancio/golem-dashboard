@@ -215,7 +215,7 @@ class NodeInfo extends React.Component {
     const balanceRend = (
       <div className="col mt-3">
         <h5>ZSync Balance</h5>
-        {(balance != null ? PaymentFormat.wallet(balance.toString()) : 'unknown') + " " + token}
+        {(balance != null ? PaymentFormat.balance(balance.toString()) : 'unknown') + " " + token}
       </div>
     )
 
