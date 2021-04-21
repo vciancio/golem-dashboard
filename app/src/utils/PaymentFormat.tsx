@@ -9,7 +9,7 @@ function wallet(ethAddr: string): string {
 /** Balances are really long, need to shorten. */
 function balance(balance: number, decimals = 7) {
     if (decimals > decimalPlaces(balance)) {
-        return balance
+        return balance.toString()
     }
 
     const mod = Math.pow(10, decimals)
