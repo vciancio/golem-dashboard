@@ -5,7 +5,7 @@ Just a very barebones reactjs dashboard which will display the stats of your gol
 ## Hackathon Entry Plug
 [Enterant in the Golem Mainnet @GR9 Hackathon - Open Track](https://gitcoin.co/issue/golemfactory/hackathons/11/100025157#)
 
-* [Presentation](https://drive.google.com/file/d/1QRl4jln43t3LJn6Jnjh8Y6WzST1Yz9hQ/view?usp=sharing)
+* [Presentation](hackathon/Golem-Dashboard.pdf?raw=true) (hackathon/Golem-Dashboard.pdf)
 * [Youtube Video Demo](https://youtu.be/N5wGKaRCnZE)
 * Team Members - Vincente Ciancio
 
