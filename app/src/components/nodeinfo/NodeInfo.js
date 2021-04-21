@@ -5,6 +5,7 @@ import GolemNodeSync from '../../utils/GolemNodeSync';
 import CommonComponents from '../common/CommonComponents'
 import PercentText from '../common/percenttext'
 import { ProviderStatus, ProviderState } from '../common/providerstatus'
+import PaymentFormat from '../../utils/PaymentFormat'
 
 const LINK_ZKSCAN_ACCOUNT = "https://zkscan.io/explorer/accounts"
 
@@ -98,7 +99,7 @@ class NodeInfo extends React.Component {
     ]
 
     return (
-      <div className="container-fluid">
+      <div className="container-fluid text-center">
         <div className="row">
           {CommonComponents.headerList(items)}
         </div>
@@ -114,7 +115,7 @@ class NodeInfo extends React.Component {
     ]
 
     return (
-      <div className="container-fluid">
+      <div className="container-fluid text-center">
         <div className="row">
           {CommonComponents.headerList(items)}
         </div>
@@ -129,7 +130,7 @@ class NodeInfo extends React.Component {
 
   _renderNode(node) {
     return (
-      <div className="container-fluid">
+      <div className="container-fluid text-center">
         <div className="row">
           {this._renderStatus(node)}
         </div>
@@ -205,22 +206,41 @@ class NodeInfo extends React.Component {
 
   _renderPayment(node, ethAddr, token, balance) {
     const walletRend = (
-      <div className="col">
+      <div className="col mt-3">
         <h5>Wallet</h5>
-        {_shrinkWallet(ethAddr)}
+        {PaymentFormat.wallet(ethAddr)}
       </div>
     )
 
     const balanceRend = (
-      <div className="col-6">
+      <div className="col mt-3">
         <h5>ZSync Balance</h5>
-        {_formatBalance(balance).toString() + " " + token}
+        {(balance != null ? PaymentFormat.balance(balance.toString()) : 'unknown') + " " + token}
+      </div>
+    )
+
+    const oneDay = node.stats.earnings
+      ? PaymentFormat.balance(node.stats.earnings.oneDay)
+      : 'Unknown'
+    const sevenDays = node.stats.earnings
+      ? PaymentFormat.balance(node.stats.earnings.sevenDays)
+      : 'Unknown'
+
+    const incomeItems = [
+      ['1 Day', `${oneDay} GLM`],
+      ['7 Days', `${sevenDays} GLM`]
+    ]
+
+    const incomeRend = (
+      <div className="col mt-3">
+        <h5>Node Income</h5>
+        {CommonComponents.list(incomeItems)}
       </div>
     )
 
     const link = `${LINK_ZKSCAN_ACCOUNT}/${ethAddr}`
     const rendButton = (
-      <div className="col">
+      <div className="col mt-3">
         <a className="btn btn-primary mt-2" href={link}>View in ZkScan</a>
       </div>
     )
@@ -232,33 +252,17 @@ class NodeInfo extends React.Component {
           <div className="row">
             {walletRend}
             {balanceRend}
-            {rendButton}
+            {incomeRend}
+          </div>
+          <div className="row">
+            <div className="col">
+              {rendButton}
+            </div>
           </div>
         </div>
       </div>
     )
   }
-}
-
-/** ETH Addresses are really long, need to shorten. */
-function _shrinkWallet(ethAddr) {
-  return [
-    ethAddr.substring(0, 6),
-    ethAddr.substring(ethAddr.length - 5, ethAddr.length)
-  ].join('...')
-}
-
-/** Balances are really long, need to shorten. */
-function _formatBalance(balance, decimals = 7) {
-  const mod = Math.pow(10, decimals)
-  let friendlyBalance = balance == null ?
-    "unknown" :
-    Math.floor(balance * mod) / mod
-
-  if (typeof friendlyBalance !== 'string') {
-    friendlyBalance = friendlyBalance.toString() + '...'
-  }
-  return friendlyBalance
 }
 
 export default NodeInfo;

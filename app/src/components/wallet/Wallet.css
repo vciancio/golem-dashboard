@@ -1,3 +1,7 @@
 .wallet {
     width: 75%
 }
+
+.wallet-balance {
+    font-size: xx-large;
+}

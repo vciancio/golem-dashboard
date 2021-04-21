@@ -3,6 +3,8 @@ import './Wallet.css'
 import GolemNodeSync from '../../utils/GolemNodeSync'
 import ZSyncApi from '../../utils/ZSyncApi';
 import CommonComponents from '../common/CommonComponents';
+import PaymentFormat from '../../utils/PaymentFormat';
+import { ProviderEarnings } from '../../models/GolemProvider';
 
 const DEFAULT_TOKEN: string = 'GLM'
 
@@ -11,7 +13,8 @@ type IProps = {
 }
 
 type IState = {
-  wallets: IWallet[]
+  wallets: IWallet[],
+  nodeIncome: ProviderEarnings[]
 }
 
 type IWallet = {
@@ -25,7 +28,10 @@ class Wallet extends React.Component<IProps, IState> {
 
   constructor(props: IProps) {
     super(props)
-    this.state = { wallets: [] }
+    this.state = {
+      wallets: [],
+      nodeIncome: []
+    }
   }
 
   componentDidMount() {
@@ -33,12 +39,23 @@ class Wallet extends React.Component<IProps, IState> {
   }
 
   async _startFetch() {
-    const walletPromise = this.props.addresses.map(async address => {
-      const node = await GolemNodeSync.fetchNode(address)
-      return node === null ? null : node.info.wallet.toString()
+    const nodesPromise = this.props.addresses.map(async address => {
+      return await GolemNodeSync.fetchNode(address)
     });
 
-    const rawWallets = await Promise.all(walletPromise)
+    const nodes = await Promise.all(nodesPromise)
+    const nodeIncome: ProviderEarnings[] = []
+    const rawWallets: string[] = [] 
+    nodes.forEach((node) => {
+      if(node !== null){
+       rawWallets.push(node.info.wallet.toString()) 
+       if(node.stats.earnings != null){
+         nodeIncome.push(node.stats.earnings)
+       }
+      }
+    })
+
+    // Filter for duplicate Wallets
     const walletAddresses = this.state.wallets.map(items => { return items.address })
     rawWallets.forEach(item => {
       if (item === null || walletAddresses.includes(item)) {
@@ -56,64 +73,57 @@ class Wallet extends React.Component<IProps, IState> {
     })
 
     const wallets = await Promise.all(paymentPromise)
-    this.setState({ wallets })
+    this.setState({ wallets, nodeIncome})
   }
 
   render() {
-    console.log(this.state.wallets)
     const listItems = this.state.wallets.map(wallet => {
       let balanceRend = 'unknown'
       if (wallet.balance !== null) {
-        const balance = _formatBalance(wallet.balance)
+        const balance = PaymentFormat.balance(wallet.balance, 4)
         balanceRend = balance.toString() + ' ' + wallet.token
       }
 
       return [
-        _shrinkWallet(wallet.address),
+        PaymentFormat.wallet(wallet.address),
         balanceRend
       ]
     })
 
-    const list = CommonComponents.list(listItems.length !== 0
+    const wallets = CommonComponents.list(listItems.length !== 0
       ? listItems
       : ['', ''])
+
+    let oneDayIncome = 0
+    let sevenDaysIncome = 0
+    this.state.nodeIncome.forEach((earnings) => {
+      oneDayIncome += parseFloat(earnings.oneDay.toString())
+      sevenDaysIncome += parseFloat(earnings.sevenDays.toString())
+    })
+
+    const earningRend = CommonComponents.list([
+      ["1 Day", `${PaymentFormat.balance(oneDayIncome, 4)} GLM`],
+      ["7 Days", `${PaymentFormat.balance(sevenDaysIncome, 4)} GLM`]
+    ])
     
+    const headerList = CommonComponents.headerList([
+      ["Payment Wallets", wallets],
+      ["Earnings", earningRend]
+    ])
+
     return (
-      <div className="container-fluid wallet">
+      <div className="container-fluid wallet card">
         <div className="row">
           <div className="col">
             <h3>Wallet</h3>
           </div>
         </div>
-        <div className="row mt-3">
-          <div className="col">
-            {list}
-          </div>
+        <div className="row">
+          {headerList}
         </div>
       </div>
     )
   }
-}
-
-/** ETH Addresses are really long, need to shorten. */
-function _shrinkWallet(ethAddr: string) {
-  return [
-    ethAddr.substring(0, 6),
-    ethAddr.substring(ethAddr.length - 5, ethAddr.length)
-  ].join('...')
-}
-
-/** Balances are really long, need to shorten. */
-function _formatBalance(balance: number, decimals = 7) {
-  const mod = Math.pow(10, decimals)
-  let friendlyBalance = balance == null ?
-    "unknown" :
-    Math.floor(balance * mod) / mod
-
-  if (typeof friendlyBalance !== 'string') {
-    friendlyBalance = friendlyBalance.toString() + '...'
-  }
-  return friendlyBalance
 }
 
 export default Wallet;
