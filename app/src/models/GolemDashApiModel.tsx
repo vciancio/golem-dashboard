@@ -1,8 +1,7 @@
 /**
- * Object representing the current state of the Golem Provider.
- * Includes data from GolemStats as well as Golem-Dash-Server
+ * Object representing the current state of the Golem Provider
  */
-export type GolemProvider = {
+export type GolemNodeResponse = {
   "info": {
     "id": String | null
     "name": String
@@ -23,15 +22,5 @@ export type GolemProvider = {
       "percent": number
       "used": number
     };
-  },
-  "stats": {
-    "earnings": ProviderEarnings | null
   }
 }
-
-export type ProviderEarnings = {
-  "oneDay": number,
-  "sevenDays": number
-}
-
-export default GolemProvider

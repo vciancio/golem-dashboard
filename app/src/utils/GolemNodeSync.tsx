@@ -1,7 +1,8 @@
 import { BehaviorSubject, ReplaySubject } from 'rxjs'
-import GolemProvider from '../models/GolemProvider';
+import { GolemProvider, ProviderEarnings} from '../models/GolemProvider';
 import EnvConfig from './EnvConfig'
 import GolemNodeApi from './GolemNodeApi'
+import GolemStatsApi from './GolemStatsApi'
 
 const POLL_INTERVAL_DEFAULT: number = 5000
 const POLLING_RATE: number = EnvConfig.pollingRate ? +EnvConfig.pollingRate : POLL_INTERVAL_DEFAULT;
@@ -26,7 +27,7 @@ class GolemNodeSync {
     if(this._nodes.has(address)){
       return this._nodes.get(address)!!.getValue()
     }
-    return await GolemNodeApi.getNodeInfo(address)
+    return await _fetchData(address)
   }
 
   /** Recieve updates for a node */
@@ -96,13 +97,14 @@ class GolemNodeSync {
     }
 
     try {
-      const node = await GolemNodeApi.getNodeInfo(address)
+      const node = await _fetchData(address)
       if (!node) {
         this._nodes.delete(address)
         subject.error(new Error('No node for address'))
         console.warn('Removing ', address, ' from polling list')
         return
       }
+
       subject.next(node)
     } catch (e) {
       const msg = 'Failed to load data for ' + address
@@ -112,6 +114,31 @@ class GolemNodeSync {
       console.warn('Removing ', address, ' from polling list')
     }
   }
+}
+
+async function _fetchData(address: String): Promise<GolemProvider | null> {
+  const node = await GolemNodeApi.getNodeInfo(address)
+  if(!node){
+    return null;
+  }
+  
+  let earnings = node.info.id 
+    ? await _getEarnings(node.info.id)
+    : null
+  
+  return {
+    info: node.info,
+    hardware: node.hardware,
+    stats: {
+      earnings: earnings
+    }
+  }
+}
+
+async function _getEarnings(providerId: String): Promise<ProviderEarnings> {
+  const oneDay = await GolemStatsApi.getEarnings(providerId, 24)
+  const sevenDays = await GolemStatsApi.getEarnings(providerId, 168)
+  return {oneDay, sevenDays}
 }
 
 const instance = new GolemNodeSync()
