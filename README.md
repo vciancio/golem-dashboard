@@ -2,6 +2,13 @@
 
 Just a very barebones reactjs dashboard which will display the stats of your golem nodes... Cause ssh-ing into each of them is too hard. Works with [vciancio/golem-node-server](https://github.com/vciancio/golem-node-server)
 
+## Hackathon Entry Plug
+[Enterant in the Golem Mainnet @GR9 Hackathon - Open Track](https://gitcoin.co/issue/golemfactory/hackathons/11/100025157#)
+
+* [Presentation](https://drive.google.com/file/d/1QRl4jln43t3LJn6Jnjh8Y6WzST1Yz9hQ/view?usp=sharing)
+* [Youtube Video Demo](https://youtu.be/N5wGKaRCnZE)
+* Team Members - Vincente Ciancio
+
 ## Screenshots
 |Desktop|Mobile|
 |---|---|
@@ -45,10 +52,3 @@ services:
     ports: 
       - 3000:3000
 ~~~
-
-## Hackathon Entry Plug
-[Enterant in the Golem Mainnet @GR9 Hackathon - Open Track](https://gitcoin.co/issue/golemfactory/hackathons/11/100025157#)
-
-* [Presentation](https://drive.google.com/file/d/1QRl4jln43t3LJn6Jnjh8Y6WzST1Yz9hQ/view?usp=sharing)
-* [Youtube Video Demo](https://youtu.be/N5wGKaRCnZE)
-* Team Members - Vincente Ciancio
