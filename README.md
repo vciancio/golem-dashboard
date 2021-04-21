@@ -45,3 +45,10 @@ services:
     ports: 
       - 3000:3000
 ~~~
+
+## Hackathon Entry Plug
+[Enterant in the Golem Mainnet @GR9 Hackathon - Open Track](https://gitcoin.co/issue/golemfactory/hackathons/11/100025157#)
+
+* [Presentation](https://drive.google.com/file/d/1QRl4jln43t3LJn6Jnjh8Y6WzST1Yz9hQ/view?usp=sharing)
+* [Youtube Video Demo](https://youtu.be/N5wGKaRCnZE)
+* Team Members - Vincente Ciancio
