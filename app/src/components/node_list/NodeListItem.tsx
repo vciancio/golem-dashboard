@@ -126,6 +126,14 @@ class NodeListItem extends React.Component<Properties, State> {
       ? <a onClick={() => this.props.expandNode(this.props.address)} href="#"><i className="fas fa-expand-alt expand-provider"></i></a>
       : null
 
+    const version = this.state.status !== ProviderState.OFFLINE
+      ? (<p>{this.state.version}</p>)
+      : (<p><a onClick={() => this._subscribe()} href="#">Reconnect <i className="fa fa-refresh expand-provider"></i></a></p>)
+
+    const tasks = this.state.status !== ProviderState.OFFLINE
+      ? (<p>{this.state.tasks}</p>)
+      : (null)
+
     return (
       <div className="row">
         <div className="col">
@@ -138,10 +146,10 @@ class NodeListItem extends React.Component<Properties, State> {
           <ProviderStatus state={this.state.status} />
         </div>
         <div className="col">
-          <p>{this.state.version}</p>{ }
+          <p>{version}</p>
         </div>
         <div className="col">
-          <p>{this.state.tasks}</p>
+          <p>{tasks}</p>
         </div>
       </div>
     )
